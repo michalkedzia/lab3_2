@@ -79,4 +79,16 @@ class OrderTest {
     // Then
     Assertions.assertSame(order.getOrderState(), Order.State.CONFIRMED);
   }
+
+  @Test
+  void order_should_throw_exception() {
+    // Given
+    Instant orderConfirm = orderSubmit.plus(25, ChronoUnit.HOURS);
+    Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+    Mockito.when(clock.instant()).thenReturn(orderSubmit).thenReturn(orderConfirm);
+    order.submit();
+    // When Then
+    Assertions.assertThrows(OrderExpiredException.class, () -> order.confirm());
+    Assertions.assertSame(order.getOrderState(), Order.State.CANCELLED);
+  }
 }
