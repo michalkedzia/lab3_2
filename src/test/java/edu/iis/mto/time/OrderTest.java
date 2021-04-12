@@ -49,4 +49,34 @@ class OrderTest {
     // Then
     Assertions.assertSame(order.getOrderState(), Order.State.CONFIRMED);
   }
+
+  @Test
+  void order_should_be_confirmed_one_second_before_VALID_PERIOD_HOURS() {
+    // Given
+    Instant orderConfirm =
+        orderSubmit
+            .plus(23, ChronoUnit.HOURS)
+            .plus(59, ChronoUnit.MINUTES)
+            .plus(59, ChronoUnit.SECONDS);
+    Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+    Mockito.when(clock.instant()).thenReturn(orderSubmit).thenReturn(orderConfirm);
+    order.submit();
+    // When
+    order.confirm();
+    // Then
+    Assertions.assertSame(order.getOrderState(), Order.State.CONFIRMED);
+  }
+
+  @Test
+  void order_should_be_confirmed_exact_after_24_hours() {
+    // Given
+    Instant orderConfirm = orderSubmit.plus(24, ChronoUnit.HOURS);
+    Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+    Mockito.when(clock.instant()).thenReturn(orderSubmit).thenReturn(orderConfirm);
+    order.submit();
+    // When
+    order.confirm();
+    // Then
+    Assertions.assertSame(order.getOrderState(), Order.State.CONFIRMED);
+  }
 }
