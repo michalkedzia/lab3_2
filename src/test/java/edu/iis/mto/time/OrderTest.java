@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 class OrderTest {
   @Mock private Clock clock;
   private Order order;
+  private final Instant orderSubmit = Instant.parse("2021-04-12T21:35:23.084569400Z");
 
   @BeforeEach
   void setUp() throws Exception {
@@ -25,12 +26,27 @@ class OrderTest {
 
   @Test
   void order_should_be_confirmed_with_same_order_date() {
-    Instant orderSubmit = Instant.parse("2021-04-12T21:35:23.084569400Z");
+    // Given
     Instant orderConfirm = orderSubmit.plus(0, ChronoUnit.HOURS);
     Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
     Mockito.when(clock.instant()).thenReturn(orderSubmit).thenReturn(orderConfirm);
     order.submit();
+    // When
     order.confirm();
+    // Then
+    Assertions.assertSame(order.getOrderState(), Order.State.CONFIRMED);
+  }
+
+  @Test
+  void order_should_be_confirmed_with_time_shift_12_hours() {
+    // Given
+    Instant orderConfirm = orderSubmit.plus(12, ChronoUnit.HOURS);
+    Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+    Mockito.when(clock.instant()).thenReturn(orderSubmit).thenReturn(orderConfirm);
+    order.submit();
+    // When
+    order.confirm();
+    // Then
     Assertions.assertSame(order.getOrderState(), Order.State.CONFIRMED);
   }
 }
